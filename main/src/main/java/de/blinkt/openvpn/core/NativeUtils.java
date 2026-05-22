@@ -63,7 +63,7 @@ public class NativeUtils {
     static {
         if (!isRoboUnitTest()) {
             System.loadLibrary("ovpnutil");
-            if (!BuildConfig.FLAVOR.equals("skeleton")) {
+            if (!BuildConfig.FLAVOR.contains("skeleton")) {
                 System.loadLibrary("osslspeedtest");
             }
         }

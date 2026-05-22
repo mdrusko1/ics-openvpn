@@ -39,9 +39,8 @@ if(NOT ${OPENVPN3OSSL} OR ${OPENVPN2MBED})
     add_subdirectory(mbedtls)
 endif()
 
-    # Super hacky way to determine flavour
-#-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/Users/arne/software/icsopenvpn/main/build/intermediates/cmake/normal/debug/obj/arm64-v8a
-if (NOT ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} MATCHES "build/intermediates/cmake/.*skeleton.*/")
+# Super hacky way to determine flavour (Replaced with Gradle flags)
+if (UI_BUILD AND OPENVPN3_BUILD)
     FIND_PACKAGE(SWIG 3.0 REQUIRED)
 
     add_custom_command(OUTPUT "ovpncli_wrap.cxx"
@@ -105,7 +104,7 @@ if (NOT ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} MATCHES "build/intermediates/cmake/.*s
              -DENABLE_EXTERNAL_PKI
             )
 else ()
-    message("Not budiling OpenVPN for output dir ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+    message("Not building OpenVPN 3 for this configuration")
 endif ()
 
 add_library(ovpnutil SHARED ovpnutil/jniglue.c)
@@ -118,11 +117,11 @@ target_link_libraries(ovpnutil log)
 add_library(osslutil SHARED ovpnutil/osslutil.cpp)
 target_link_libraries(osslutil log crypto ssl)
 
-if (NOT ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} MATCHES "build/intermediates/cmake/.*skeleton.*/")
+if (UI_BUILD)
     add_library(osslspeedtest SHARED ovpnutil/sslspeed.c)
     target_link_libraries(osslspeedtest log crypto ssl)
 else ()
-    message("Not budiling SSLSpeedTest for output dir ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+    message("Not building SSLSpeedTest for this configuration")
 endif ()
 
 set(openvpn_srcs
@@ -256,6 +255,11 @@ endif ()
 add_executable(libovpnexec.so minivpn/minivpn.c)
 target_compile_options(libovpnexec.so PRIVATE -fPIE)
 target_link_libraries(libovpnexec.so PRIVATE openvpn -fPIE -pie)
+# Force the executable into the shared-lib output dir so AGP packages it into the AAR/APK.
+# Without this, android.library leaves it in the default runtime output dir and nativeLibraryDir
+# ends up empty, causing OpenVPNThread to throw IOException on Android P+.
+set_target_properties(libovpnexec.so PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 add_executable(pie_openvpn.${ANDROID_ABI} minivpn/minivpn.c)
 target_compile_options(pie_openvpn.${ANDROID_ABI} PRIVATE -fPIE)

@@ -92,11 +92,9 @@ public class LogItem implements Parcelable {
         LogItem other = (LogItem) obj;
 
         return Arrays.equals(mArgs, other.mArgs) &&
-                ((other.mMessage == null && mMessage == other.mMessage) ||
-                        mMessage.equals(other.mMessage)) &&
+                java.util.Objects.equals(mMessage, other.mMessage) &&
                 mRessourceId == other.mRessourceId &&
-                ((mLevel == null && other.mLevel == mLevel) ||
-                        other.mLevel.equals(mLevel)) &&
+                java.util.Objects.equals(mLevel, other.mLevel) &&
                 mVerbosityLevel == other.mVerbosityLevel &&
                 logtime == other.logtime;
     }
