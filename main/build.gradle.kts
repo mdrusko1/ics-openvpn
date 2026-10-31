@@ -37,6 +37,10 @@ android {
 
     defaultConfig {
         minSdk = 21
+        // App pakira samo ARM; x86/x86_64 bi se kompajlirali pa bacali
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        }
         //targetSdk = 36
         //targetSdkPreview = "UpsideDownCake"
         //versionCode = 219
